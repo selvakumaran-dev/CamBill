@@ -1685,6 +1685,10 @@ select {
   .stats-grid {
     grid-template-columns: 1fr 1fr;
   }
+  
+  .form-grid-2, .form-grid-3 {
+    grid-template-columns: 1fr;
+  }
 
   .auth-layout {
     grid-template-columns: 1fr;
@@ -1699,9 +1703,12 @@ select {
   .stats-grid {
     grid-template-columns: 1fr;
   }
-
-  .form-grid-2 {
-    grid-template-columns: 1fr;
+  .page-header h1 {
+    font-size: 0.85rem;
+  }
+  .page-header-actions button {
+    padding: 5px 8px;
+    font-size: 0.75rem;
   }
 }
 
@@ -1749,8 +1756,7 @@ select {
   }
 
   .app-main {
-    padding-bottom: 70px;
-    /* Space for MobileNav */
+    padding-bottom: 70px; /* Space for MobileNav */
   }
 
   .page-header {
@@ -1758,25 +1764,29 @@ select {
     padding: 0 var(--s4);
   }
 
+  .billing-layout {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s4);
+  }
+
   .billing-right {
-    position: fixed;
-    bottom: 64px;
-    left: 0;
-    right: 0;
-    z-index: 90;
-    padding: var(--s3);
-    background: var(--bg);
-    border-top: 1px solid var(--border);
-    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+    position: static; /* Fluidly scrolls naturally instead of blocking the screen */
+    background: transparent;
+    padding: 0;
+    margin-top: var(--s3);
+    box-shadow: none;
+    border-top: none;
   }
 
   .billing-right .card {
     margin-bottom: 0;
+    box-shadow: var(--shadow-sm);
   }
 
-  /* Make order summary collapsible or compact on mobile */
+  /* Compact summary for small phones */
   .billing-right .card-header h2 {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
   }
 
   .pay-mode-group {
@@ -1784,11 +1794,15 @@ select {
   }
 
   .pay-mode-btn {
-    padding: 6px;
+    padding: 8px 6px;
   }
 
   .billing-left {
-    padding-bottom: 240px;
-    /* space for the fixed scanner summary */
+    padding-bottom: 0; /* Removes white space gap */
+  }
+  
+  .scanner-card {
+     /* Ensures camera doesn't blow out of phone width */
+     max-width: 100vw;
   }
 }
