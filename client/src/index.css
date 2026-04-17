@@ -78,6 +78,8 @@
 
 html {
   font-size: 14px;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 body {
@@ -86,6 +88,8 @@ body {
   color: var(--text-1);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 a {
@@ -124,6 +128,8 @@ pre,
 .app-shell {
   display: flex;
   min-height: 100vh;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 /* ── Sidebar ─────────────────────────────────────────────────── */
@@ -321,6 +327,7 @@ pre,
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  min-width: 0; /* Prevents flex-children from expanding the screen width */
 }
 
 .page-header {
@@ -353,6 +360,7 @@ pre,
   padding: var(--s6) var(--s8);
   max-width: 1440px;
   width: 100%;
+  min-width: 0;
 }
 
 
@@ -567,6 +575,8 @@ select {
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow-xs);
+  min-width: 0; /* Prevents tables inside cards from forcing card width horizontally */
+  max-width: 100%;
 }
 
 .card-body {
