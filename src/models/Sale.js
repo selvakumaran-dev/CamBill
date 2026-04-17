@@ -37,11 +37,13 @@ const saleSchema = new mongoose.Schema(
         change: { type: Number, default: 0 },
         status: { type: String, enum: ['completed', 'voided', 'refunded'], default: 'completed' },
         note: { type: String, default: '' },
+        offlineId: { type: String, sparse: true },
     },
     { timestamps: true, versionKey: false }
 );
 
 saleSchema.index({ store: 1, createdAt: -1 });
 saleSchema.index({ store: 1, cashier: 1, createdAt: -1 });
+saleSchema.index({ store: 1, offlineId: 1 }, { unique: true, sparse: true });
 
 module.exports = mongoose.model('Sale', saleSchema);

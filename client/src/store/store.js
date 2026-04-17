@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import toast from 'react-hot-toast';
 import api from '../lib/api';
 
 const getStoredUser = () => {
@@ -39,8 +41,10 @@ export const useAuthStore = create((set) => ({
 }));
 
 /* ─── Cart Store ─────────────────────────────────────────────── */
-export const useCartStore = create((set, get) => ({
-    items: [],
+export const useCartStore = create(
+    persist(
+        (set, get) => ({
+            items: [],
     lastScannedBarcode: null,
     scanTimestamps: {},
     heldCarts: [],
@@ -58,12 +62,20 @@ export const useCartStore = create((set, get) => ({
         set((state) => {
             const existing = state.items.find((i) => i.product._id === product._id);
             if (existing) {
+                if (existing.quantity + 1 > product.stock) {
+                    toast.error(`Stock limited to ${product.stock} for ${product.name}`);
+                    return state;
+                }
                 return {
                     items: state.items.map((i) =>
                         i.product._id === product._id ? { ...i, quantity: i.quantity + 1 } : i
                     ),
                     lastScannedBarcode: product.barcode,
                 };
+            }
+            if (product.stock < 1) {
+                 toast.error(`${product.name} is out of stock`);
+                 return state;
             }
             return {
                 items: [...state.items, { product, quantity: 1 }],
@@ -76,11 +88,18 @@ export const useCartStore = create((set, get) => ({
         set((state) => ({ items: state.items.filter((i) => i.product._id !== productId) })),
 
     updateQty: (productId, qty) =>
-        set((state) => ({
-            items: qty < 1
-                ? state.items.filter((i) => i.product._id !== productId)
-                : state.items.map((i) => i.product._id === productId ? { ...i, quantity: qty } : i),
-        })),
+        set((state) => {
+            const existing = state.items.find((i) => i.product._id === productId);
+            if (!existing) return state;
+            const newQty = Math.min(qty, existing.product.stock);
+            if (qty > existing.product.stock) toast.error(`Stock limited to ${existing.product.stock}`);
+
+            return {
+                items: newQty < 1
+                    ? state.items.filter((i) => i.product._id !== productId)
+                    : state.items.map((i) => i.product._id === productId ? { ...i, quantity: newQty } : i),
+            };
+        }),
 
     clearCart: () => set({ items: [], lastScannedBarcode: null, scanTimestamps: {} }),
 
@@ -114,4 +133,10 @@ export const useCartStore = create((set, get) => ({
     get taxTotal() { return get().items.reduce((s, i) => s + i.product.price * i.quantity * ((i.product.taxRate || 0) / 100), 0); },
     get grandTotal() { return get().subtotal + get().taxTotal; },
     get itemCount() { return get().items.reduce((s, i) => s + i.quantity, 0); },
-}));
+        }),
+        {
+            name: 'cambill_cart_state',
+            partialize: (state) => ({ items: state.items, heldCarts: state.heldCarts })
+        }
+    )
+);

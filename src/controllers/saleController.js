@@ -6,10 +6,15 @@ const Sale = require('../models/Sale');
 /* All queries are automatically scoped to req.user.store */
 
 const processSale = async (req, res) => {
-    const { items, paymentMode = 'cash', amountPaid = 0, discount = 0, note = '' } = req.body;
+    const { items, paymentMode = 'cash', amountPaid = 0, discount = 0, note = '', offlineId } = req.body;
 
     if (!Array.isArray(items) || items.length === 0) {
         return res.status(400).json({ success: false, message: 'Cart is empty' });
+    }
+
+    if (offlineId) {
+        const existing = await Sale.findOne({ store: req.user.store, offlineId });
+        if (existing) return res.status(200).json({ success: true, data: existing, duplicated: true });
     }
 
     const session = await mongoose.startSession();
@@ -36,18 +41,20 @@ const processSale = async (req, res) => {
             if (!product) {
                 throw Object.assign(new Error(`Product not found in your store: ${barcode}`), { statusCode: 404 });
             }
-            if (product.stock < quantity) {
-                throw Object.assign(
-                    new Error(`Insufficient stock for "${product.name}" (available: ${product.stock})`),
-                    { statusCode: 409 }
-                );
-            }
 
-            await Product.updateOne(
-                { _id: product._id },
+            // High concurrency mathematical atomic lock
+            const updateResult = await Product.updateOne(
+                { _id: product._id, stock: { $gte: quantity } },
                 { $inc: { stock: -quantity } },
                 { session }
             );
+
+            if (updateResult.modifiedCount === 0) {
+                 throw Object.assign(
+                    new Error(`Concurrency Error: Insufficient stock for "${product.name}" (available: ${product.stock})`),
+                    { statusCode: 409 }
+                );
+            }
 
             const lineTotal = product.price * quantity;
             const lineTax = lineTotal * (product.taxRate / 100);
@@ -71,7 +78,7 @@ const processSale = async (req, res) => {
         const [sale] = await Sale.create(
             [{
                 store: req.user.store, cashier: req.user._id, items: enrichedItems,
-                subtotal, taxTotal, discount, grandTotal, paymentMode, amountPaid, change, note
+                subtotal, taxTotal, discount, grandTotal, paymentMode, amountPaid, change, note, offlineId
             }],
             { session }
         );

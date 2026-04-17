@@ -55,7 +55,8 @@ export const syncOfflineSales = async () => {
                 items: sale.items,
                 paymentMode: sale.paymentMode,
                 amountPaid: sale.amountPaid,
-                discount: sale.discount
+                discount: sale.discount,
+                offlineId: sale._offlineId
             };
             await api.post('/sales', payload);
             successCount++;
