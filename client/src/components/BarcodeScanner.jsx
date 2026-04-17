@@ -7,6 +7,23 @@ export default function BarcodeScanner({ onScan, isActive }) {
     const [status, setStatus] = useState('idle');
     const [errMsg, setErrMsg] = useState('');
     const [lastCode, setLastCode] = useState('');
+    const scanCache = useRef({ code: '', time: 0 });
+
+    const playBeep = () => {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'sine';
+            osc.frequency.value = 880; 
+            gain.gain.setValueAtTime(0.1, ctx.currentTime);
+            osc.start();
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+            osc.stop(ctx.currentTime + 0.15);
+        } catch (e) { console.warn('Audio API not supported'); }
+    };
 
     const startScanner = useCallback(async () => {
         if (instanceRef.current) return;
@@ -17,7 +34,16 @@ export default function BarcodeScanner({ onScan, isActive }) {
             await qr.start(
                 { facingMode: 'environment' },
                 { fps: 15, qrbox: { width: 240, height: 120 }, aspectRatio: 1.7, disableFlip: false },
-                (text) => { setLastCode(text); onScan(text); },
+                (text) => { 
+                    const now = Date.now();
+                    if (scanCache.current.code === text && (now - scanCache.current.time) < 3000) {
+                        return; // Prevent duplicate scan of same item within 3 seconds
+                    }
+                    scanCache.current = { code: text, time: now };
+                    setLastCode(text); 
+                    playBeep();
+                    onScan(text); 
+                },
                 () => { }
             );
             setStatus('active');

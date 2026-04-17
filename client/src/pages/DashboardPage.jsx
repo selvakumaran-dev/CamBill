@@ -121,12 +121,12 @@ export default function DashboardPage() {
                     <div className="card-header">
                         <h2>Recent Sales</h2>
                     </div>
-                    <div className="table-search-bar">
-                        <div className="input-with-icon" style={{ width: 260 }}>
+                    <div className="table-search-bar" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        <div className="input-with-icon" style={{ width: '100%', maxWidth: 300 }}>
                             <Search size={14} className="icon" />
                             <input id="search-sales" placeholder="Search invoice or cashier…"
                                 value={search} onChange={(e) => setSearch(e.target.value)}
-                                style={{ padding: '6px 10px 6px 32px', fontSize: '0.8rem' }} />
+                                style={{ padding: '6px 10px 6px 32px', fontSize: '0.8rem', width: '100%' }} />
                         </div>
                     </div>
 

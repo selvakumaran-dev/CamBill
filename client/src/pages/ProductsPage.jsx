@@ -126,15 +126,15 @@ export default function ProductsPage() {
 
                 {/* Table */}
                 <div className="card">
-                    <div className="table-search-bar">
-                        <div className="products-toolbar" style={{ flex: 1 }}>
-                            <div className="input-with-icon search-wrap">
+                    <div className="table-search-bar" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        <div className="products-toolbar" style={{ flex: 1, display: 'flex', flexWrap: 'wrap', gap: 10, width: '100%' }}>
+                            <div className="input-with-icon search-wrap" style={{ flex: '1 1 100%', minWidth: 200 }}>
                                 <Search size={14} className="icon" />
                                 <input placeholder="Search products or barcodes…" value={search}
                                     onChange={(e) => setSearch(e.target.value)}
-                                    style={{ padding: '6px 10px 6px 32px', fontSize: '0.8rem' }} />
+                                    style={{ padding: '6px 10px 6px 32px', fontSize: '0.8rem', width: '100%' }} />
                             </div>
-                            <select className="input" style={{ width: 'auto', padding: '6px 28px 6px 10px', fontSize: '0.8rem' }}
+                            <select className="input" style={{ width: '100%', maxWidth: 'max-content', padding: '6px 28px 6px 10px', fontSize: '0.8rem' }}
                                 value={catFilter} onChange={(e) => setCatFilter(e.target.value)}>
                                 <option value="">All categories</option>
                                 {CATS.map(c => <option key={c}>{c}</option>)}
