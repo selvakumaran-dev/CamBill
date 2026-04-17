@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import api from '../lib/api';
 import { useAuthStore } from '../store/store';
 import toast from 'react-hot-toast';
-import { Plus, Edit2, Check, X, Search, RefreshCw, Package } from 'lucide-react';
+import BarcodeScanner from '../components/BarcodeScanner';
+import { Plus, Edit2, Check, X, Search, RefreshCw, Package, Camera, CameraOff } from 'lucide-react';
 
 const CATS = ['Dairy', 'Bakery', 'Beverages', 'Snacks', 'Produce', 'Meat', 'Frozen', 'Household', 'Personal Care', 'Other'];
 const EMPTY = { barcode: '', name: '', price: '', stock: '', category: 'Other', unit: 'pcs', taxRate: 0, imageUrl: '' };
@@ -16,6 +17,13 @@ export default function ProductsPage() {
     const [showForm, setShowForm] = useState(false);
     const [catFilter, setCatFilter] = useState('');
     const [search, setSearch] = useState('');
+    const [scannerOn, setScannerOn] = useState(false);
+
+    const handleScan = (barcode) => {
+        setDraft((p) => ({ ...p, barcode }));
+        setScannerOn(false);
+        toast.success(`Scanned: ${barcode}`);
+    };
 
     const load = async () => {
         setLoading(true);
@@ -74,13 +82,26 @@ export default function ProductsPage() {
                         <div className="card-header"><h2>New Product</h2></div>
                         <form onSubmit={handleCreate}>
                             <div className="card-body">
+                                {scannerOn && (
+                                    <div style={{ marginBottom: 16 }}>
+                                        <BarcodeScanner onScan={handleScan} isActive={scannerOn} />
+                                    </div>
+                                )}
                                 <div className="form-grid-3" style={{ marginBottom: 12 }}>
-                                    {[['Barcode', 'barcode', 'text', true], ['Product Name', 'name', 'text', true], ['Price (₹)', 'price', 'number', true],
+                                    <div className="field">
+                                        <label style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <span>Barcode <span style={{ color: 'var(--red)' }}>*</span></span>
+                                            <button type="button" onClick={() => setScannerOn(!scannerOn)} style={{ background: 'none', border: 'none', color: 'var(--blue)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                {scannerOn ? <><CameraOff size={14}/> Stop</> : <><Camera size={14}/> Auto-Scan</>}
+                                            </button>
+                                        </label>
+                                        <input type="text" value={draft.barcode} onChange={d('barcode')} required placeholder="Barcode" />
+                                    </div>
+                                    {[['Product Name', 'name', 'text', true], ['Price (₹)', 'price', 'number', true],
                                     ['Stock', 'stock', 'number', true], ['Unit', 'unit', 'text', false]].map(([lbl, key, type, req]) => (
                                         <div key={key} className="field">
                                             <label>{lbl}{req && <span style={{ color: 'var(--red)' }}> *</span>}</label>
-                                            <input type={type} value={draft[key]} onChange={d(key)} required={req}
-                                                placeholder={lbl} />
+                                            <input type={type} value={draft[key]} onChange={d(key)} required={req} placeholder={lbl} />
                                         </div>
                                     ))}
                                     <div className="field">
