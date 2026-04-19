@@ -25,7 +25,8 @@ export default function Receipt({ sale, onClose }) {
     }, [sale, handlePrint]);
 
     const handlePDF = () => {
-        const doc = new jsPDF({ unit: 'mm', format: [80, 200], orientation: 'portrait' });
+        const estHeight = 85 + (sale.items.length * 10) + 40; 
+        const doc = new jsPDF({ unit: 'mm', format: [80, Math.max(150, estHeight)], orientation: 'portrait' });
         let y = 8; const lh = 4.5;
         const c = (t, fs = 10, bold = false) => {
             doc.setFontSize(fs); doc.setFont('helvetica', bold ? 'bold' : 'normal');
